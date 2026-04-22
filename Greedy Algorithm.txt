@@ -1,0 +1,594 @@
+-------------------------------
+Activity Selection..
+------------------------------------
+
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    vector<pair<int,int>> activities = {
+        {1,2},{3,4},{0,6},{5,7},{8,9},{5,9}
+    };
+
+    // Sort by finish time
+    sort(activities.begin(), activities.end(), [](auto &a, auto &b){
+        return a.second < b.second;
+    });
+
+    int count = 1;
+    int lastEnd = activities[0].second;
+
+    for(int i = 1; i < activities.size(); i++){
+        if(activities[i].first >= lastEnd){
+            count++;
+            lastEnd = activities[i].second;
+        }
+    }
+
+    cout << count << endl;
+}
+-------------------------------------------------------------------
+Fractional Knapsack
+------------------------------------------------------------------
+#include <bits/stdc++.h>
+using namespace std;
+
+struct Item {
+    int weight;
+    int value;
+};
+
+// comparator (sort by value/weight descending)
+bool cmp(Item a, Item b) {
+    double r1 = (double)a.value / a.weight;
+    double r2 = (double)b.value / b.weight;
+    return r1 > r2;
+}
+
+int main() {
+
+    int n = 3;
+    Item arr[3] = {
+        {10, 60},
+        {20, 100},
+        {30, 120}
+    };
+
+    int capacity = 50;
+
+    // Step 1: sort items by ratio
+    sort(arr, arr + n, cmp);
+
+    // Step 2: fill bag
+    double totalValue = 0.0;
+
+    for(int i = 0; i < n; i++) {
+
+        // agar poora aa jaye
+        if(arr[i].weight <= capacity) {
+            capacity -= arr[i].weight;
+            totalValue += arr[i].value;
+        }
+        else {
+            // warna fraction lo
+            totalValue += arr[i].value * ((double)capacity / arr[i].weight);
+            break;
+        }
+    }
+
+    cout << totalValue << endl;
+
+    return 0;
+}
+-----------------------------------------------
+Coin Change
+---------------------------------------------
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+
+    // coins in any order
+    vector<int> coins = {1, 5, 10, 25};
+
+    // sort biggest first (IMPORTANT)
+    sort(coins.begin(), coins.end(), greater<int>());
+
+    int amount = 37;
+    int count = 0;
+
+    for(int i = 0; i < coins.size(); i++) {
+
+        while(amount >= coins[i]) {
+            amount -= coins[i];
+            count++;
+        }
+    }
+
+    cout << "Coins needed = " << count;
+
+    return 0;
+}
+--------------------------------------------
+5. Assign Cookies
+----------------------------------------
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+
+    vector<int> greed = {1,2,3};
+    vector<int> cookies = {1,1};
+
+    sort(greed.begin(), greed.end());
+    sort(cookies.begin(), cookies.end());
+
+    int count = 0;
+
+    for(int i = 0; i < cookies.size(); i++) {
+
+        if(count < greed.size() && cookies[i] >= greed[count]) {
+            count++;
+        }
+    }
+
+    cout << "Happy children = " << count;
+
+    return 0;
+}
+--------------------------------------------
+Kruskal ALGORITHM
+----------------------------------------
+#include <bits/stdc++.h>
+using namespace std;
+
+struct Edge {
+    int u, v, w;
+};
+
+bool cmp(Edge a, Edge b) {
+    return a.w < b.w;   // sort by weight
+}
+
+int parent[1000];
+
+int findParent(int x) {
+    if(parent[x] == x)
+        return x;
+    return parent[x] = findParent(parent[x]);
+}
+
+void unionSet(int a, int b) {
+    parent[findParent(a)] = findParent(b);
+}
+
+int main() {
+
+    int n = 3; // number of nodes
+
+    for(int i = 0; i < n; i++)
+        parent[i] = i;
+
+    vector<Edge> edges = {
+        {0,1,1},
+        {1,2,2},
+        {0,2,3}
+    };
+
+    sort(edges.begin(), edges.end(), cmp);
+
+    int cost = 0;
+
+    for(auto e : edges) {
+
+        if(findParent(e.u) != findParent(e.v)) {
+            cost += e.w;
+            unionSet(e.u, e.v);
+        }
+    }
+
+    cout << "Minimum Cost = " << cost;
+
+    return 0;
+}
+
+--------------------------------------------
+Prims ALGORITHM
+----------------------------------------
+Start from any node
+Always pick smallest edge
+That connects to new node
+-------------------------------
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+
+    vector<pair<int,int>> graph[3];
+
+    // graph: (neighbor, weight)
+    graph[0].push_back({1,1});
+    graph[1].push_back({0,1});
+
+    graph[1].push_back({2,2});
+    graph[2].push_back({1,2});
+
+    graph[0].push_back({2,3});
+    graph[2].push_back({0,3});
+
+    priority_queue<pair<int,int>,
+                   vector<pair<int,int>>,
+                   greater<pair<int,int>>> pq;
+
+    vector<bool> visited(3, false);
+
+    pq.push({0,0}); // {weight, node}
+
+    int cost = 0;
+
+    while(!pq.empty()) {
+
+        auto top = pq.top();
+        pq.pop();
+
+        int weight = top.first;
+        int node = top.second;
+
+        if(visited[node]) continue;
+
+        visited[node] = true;
+        cost += weight;
+
+        for(auto it : graph[node]) {
+            if(!visited[it.first]) {
+                pq.push({it.second, it.first});
+            }
+        }
+    }
+
+    cout << "Minimum Cost = " << cost;
+
+    return 0;
+}
+------------------------------------------
+Dijkstra Algorithm
+---------------------------------
+Always pick unvisited node
+With smallest distance
+Update its neighbors
+-------------------------------------
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+
+    int n = 3;
+
+    vector<pair<int,int>> graph[3];
+
+    graph[0].push_back({1,1});
+    graph[0].push_back({2,4});
+    graph[1].push_back({2,2});
+
+    vector<int> dist(n, INT_MAX);
+    vector<bool> visited(n, false);
+
+    priority_queue<pair<int,int>,
+                   vector<pair<int,int>>,
+                   greater<pair<int,int>>> pq;
+
+    dist[0] = 0;
+    pq.push({0,0}); // {distance, node}
+
+    while(!pq.empty()) {
+
+        int node = pq.top().second;
+        pq.pop();
+
+        if(visited[node]) continue;
+        visited[node] = true;
+
+        for(auto it : graph[node]) {
+
+            int neighbor = it.first;
+            int weight = it.second;
+
+            if(dist[node] + weight < dist[neighbor]) {
+
+                dist[neighbor] = dist[node] + weight;
+                pq.push({dist[neighbor], neighbor});
+            }
+        }
+    }
+
+    for(int i = 0; i < n; i++)
+        cout << "Distance of " << i << " = " << dist[i] << endl;
+
+    return 0;
+}
+---------------------------------------------
+Job Sequencing
+-------------------------------------
+1) Profit sort karo (big first)
+2) Har job ko uske deadline se pehle
+   sab se latest free slot me daalo
+-----------------------------------------------
+#include <bits/stdc++.h>
+using namespace std;
+
+struct Job {
+    int profit, deadline;
+};
+
+bool cmp(Job a, Job b) {
+    return a.profit > b.profit; 
+}
+
+int main() {
+
+    vector<Job> jobs = {
+        {100,2},
+        {19,1},
+        {27,2},
+        {25,1},
+        {15,3}
+    };
+
+    // Sort by profit
+    sort(jobs.begin(), jobs.end(), cmp);
+
+    // 🔹 Find maximum deadline
+    int maxDeadline = 0;
+    for(auto job : jobs) {
+        maxDeadline = max(maxDeadline, job.deadline);
+    }
+
+    vector<int> slot(maxDeadline, -1);
+
+    int totalProfit = 0;
+
+    for(auto job : jobs) {
+
+        for(int i = job.deadline - 1; i >= 0; i--) {
+
+            if(slot[i] == -1) {
+                slot[i] = job.profit;
+                totalProfit += job.profit;
+                break;
+            }
+        }
+    }
+
+    cout << "Maximum Profit = " << totalProfit;
+
+    return 0;
+}------------------------------------------------------------
+ Huffman Coding
+-------------------------------------------------------
+Always merge
+Two smallest frequencies
+-----------------------------
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+
+    vector<int> freq = {5,3,1,1};
+
+    priority_queue<int, vector<int>, greater<int>> pq;
+
+    for(int f : freq)
+        pq.push(f);
+
+    int cost = 0;
+
+    while(pq.size() > 1) {
+
+        int first = pq.top(); pq.pop();
+        int second = pq.top(); pq.pop();
+
+        int sum = first + second;
+
+        cost += sum;
+
+        pq.push(sum);
+    }
+
+    cout << "Total Cost = " << cost;
+
+    return 0;
+}
+-----------------------------------------
+Merge Intervals
+-------------------------------------
+Sort by start
+If overlap → merge
+Else → new interval start
+-----------------------------------------
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+
+    vector<pair<int,int>> intervals = {
+        {1,3},
+        {2,6},
+        {8,10},
+        {15,18}
+    };
+
+    sort(intervals.begin(), intervals.end());
+
+    vector<pair<int,int>> result;
+
+    pair<int,int> current = intervals[0];
+
+    for(int i = 1; i < intervals.size(); i++) {
+
+        if(intervals[i].first <= current.second) {
+            // merge
+            current.second = max(current.second, intervals[i].second);
+        }
+        else {
+            result.push_back(current);
+            current = intervals[i];
+        }
+    }
+
+    result.push_back(current);
+
+    for(auto p : result)
+        cout << "[" << p.first << "," << p.second << "] ";
+
+    return 0;
+}
+----------------------------------------------------------
+Minimum Arrows
+-------------------------------
+Sort by end time
+If next.start > current_arrow
+    new arrow
+Else
+    same arrow
+-------------------------------------
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+
+    vector<pair<int,int>> balloons = {
+        {1,6},
+        {2,8},
+        {7,12},
+        {10,16}
+    };
+
+    sort(balloons.begin(), balloons.end(),[](auto &a, auto &b){
+             return a.second < b.second; // sort by end
+         });
+
+    int arrows = 1;
+    int arrowPos = balloons[0].second;
+
+    for(int i = 1; i < balloons.size(); i++) {
+
+        if(balloons[i].first > arrowPos) {
+            arrows++;
+            arrowPos = balloons[i].second;
+        }
+    }
+
+    cout << "Minimum Arrows = " << arrows;
+
+    return 0;
+}
+------------------------------------
+Jump Game II
+-------------------------------
+Maintain current reachable range
+Find farthest we can go inside it
+When range ends → jump++
+---------------------------------
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    vector<int> nums = {2,3,1,1,4};
+
+    int jumps = 0;
+    int currentEnd = 0;
+    int farthest = 0;
+
+    for(int i = 0; i < nums.size() - 1; i++) {
+        farthest = max(farthest, i + nums[i]);
+
+        if(i == currentEnd) {
+            jumps++;
+            currentEnd = farthest;
+        }
+    }
+    cout << "Minimum Jumps = " << jumps;
+    return 0;
+}
+----------------------------------------
+Gas Station
+-------------------------------------
+1) If total gas < total cost → return -1
+2) Else:
+       Start from 0
+       If tank becomes negative
+            move start forward
+----------------------------------------------
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+
+    vector<int> gas  = {1,2,3,4,5};
+    vector<int> cost = {3,4,5,1,2};
+    int total = 0;
+    int tank = 0;
+    int start = 0;
+
+    for(int i = 0; i < gas.size(); i++) {
+        int diff = gas[i] - cost[i];
+        total += diff;
+        tank += diff;
+
+        if(tank < 0) {
+            start = i + 1;
+            tank = 0;
+        }
+    }
+    if(total >= 0)
+        cout << "Start Index = " << start;
+    else
+        cout << -1;
+    return 0;
+}
+-------------------------------------------------
+Task Scheduler
+------------------------------------------
+Result = max(
+    total tasks,
+    (maxFreq - 1) * (n + 1) + number_of_maxFreq_tasks
+)
+Arrange most frequent task in blocks
+Fill gaps with other tasks
+----------------------------
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+
+    vector<char> tasks = {'A','A','A','B','B','B'};
+    int n = 2;
+
+    unordered_map<char,int> freq;
+
+    for(char t : tasks)
+        freq[t]++;
+
+    int maxFreq = 0;
+    int maxCount = 0;
+
+    for(auto it : freq) {
+        if(it.second > maxFreq) {
+            maxFreq = it.second;
+            maxCount = 1;
+        }
+        else if(it.second == maxFreq) {
+            maxCount++;
+        }
+    }
+
+    int part = (maxFreq - 1) * (n + 1) + maxCount;
+
+    cout << max((int)tasks.size(), part);
+
+    return 0;
+}

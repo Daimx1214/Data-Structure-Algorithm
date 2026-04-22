@@ -1,0 +1,333 @@
+Fibonacci / Climbing Stairs
+--------------------------
+Har step pe tum pichlay 2 states pe depend ho
+---------------------------------------
+int climbStairs(int n) {
+    if(n <= 2) return n;
+
+    int a = 1, b = 2;
+
+    for(int i = 3; i <= n; i++) {
+        int c = a + b;
+        a = b;
+        b = c;
+    }
+
+    return b;
+}
+-----------------------------------------------
+House Robber
+------------------------
+prev2 = pichlay 2 houses ka best
+prev1 = pichlay house tak ka best
+👉 “Current loot karna = i-2
+👉 Skip karna = i-1
+👉 max le lo”
+--------------------------------
+#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    int rob(vector<int>& nums) {
+        int prev2 = 0; // dp[i-2]
+        int prev1 = 0; // dp[i-1]
+
+        for(int i = 0; i < nums.size(); i++) {
+            int loot = prev2 + nums[i]; // rob current
+            int skip = prev1;           // skip current
+            int curr = max(loot, skip);
+            prev2 = prev1;
+            prev1 = curr;
+        }
+        return prev1;
+    }
+};
+int main() {
+    Solution obj;
+
+    vector<int> nums = {2, 7, 9, 3, 1};
+    int result = obj.rob(nums);
+    cout << "Maximum money: " << result << endl;
+
+    return 0;
+}
+------------------------------------------------
+3. Kadane's Algorithm
+----------------------------------------------
+“Negative sum = bekaar → reset”
+ “Positive sum = continue karo”
+---------------------------------------------
+#include<iostream>
+#include<vector>
+using namespace std;
+
+int main(){
+
+    int n;
+    cout<<"Enter the Size of Array = ";
+    cin>>n;
+
+    int arr[n];
+    cout<<"Enter the values of Array = ";
+    for(int i=0; i<n; i++){
+        cin>>arr[i];
+    }
+    
+    int currSum = 0 , maxSum = 0;
+        for(int i=0; i<n; i++){
+            currSum = currSum + arr[i];
+
+    	if(currSum > maxSum){
+        	maxSum  = currSum;
+    	}
+    
+    	if(currSum<0){
+        	currSum = 0;
+    	}
+	}
+    cout << "Maximum Subarray Sum = " << maxSum << endl;
+    return 0;
+}
+---------------------------------
+Coin Change (Min Coins)
+-----------------------------
+👉 Har number ke liye
+👉 pehle wale answers use karo
+👉 Aur minimum le lo
+------------------------------
+#include <bits/stdc++.h>
+using namespace std;
+
+int coinChange(vector<int>& coins, int amount) {
+    vector<int> dp(amount + 1, 1e9); // bada number
+
+    dp[0] = 0;
+    for(int i = 1; i <= amount; i++) {
+        for(int coin : coins) {
+            if(i - coin >= 0) {
+                dp[i] = min(dp[i], dp[i - coin] + 1);
+            }
+        }
+    }
+    if(dp[amount] == 1e9) return -1;
+
+    return dp[amount];
+}
+int main() {
+    vector<int> coins = {1, 2, 5};
+    int amount = 11;
+
+    cout << coinChange(coins, amount);
+}
+----------------------------------------------------
+Coin Change II (Ways)
+-----------------------------------
+👉 Har coin ko use karo
+👉 Ya na karo
+👉 Aur count karo total ways
+----------------------------------------
+#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    int change(int amount, vector<int>& coins) {
+        vector<int> dp(amount + 1, 0);
+
+        dp[0] = 1;  // base case
+
+        for(int coin : coins) {          // first coins
+            for(int i = coin; i <= amount; i++) {  // then amount
+                dp[i] += dp[i - coin];
+            }
+        }
+
+        return dp[amount];
+    }
+};
+
+int main() {
+    Solution obj;
+
+    vector<int> coins = {1,2,5};
+    int amount = 5;
+
+    cout << obj.change(amount, coins);
+}
+----------------------------------------------------------
+0/1 Knapsack
+-----------------------------
+👉 Ya to bag mein daalo
+👉 Ya chhor do
+Jo zyada value de → wahi choose karo
+------------------------------------------------
+#include <bits/stdc++.h>
+using namespace std;
+
+int knapsack(vector<int>& weights, vector<int>& values, int capacity) {
+    int n = weights.size();
+    vector<int> dp(capacity + 1, 0);
+    
+    for(int i = 0; i < n; i++) {
+        for(int w = capacity; w >= weights[i]; w--) {
+            dp[w] = max(dp[w], values[i] + dp[w - weights[i]]);
+        }
+    }
+    
+    return dp[capacity];
+}
+
+int main() {
+    vector<int> weights = {10, 20, 30};
+    vector<int> values = {60, 100, 120};
+    int capacity = 50;
+    
+    cout << knapsack(weights, values, capacity);  // 220
+    
+    return 0;
+}
+---------------------------------------------------------------
+Unbounded KnapSack
+--------------------------------------
+Same item repeat ho sakta hai → loop forwards
+
+dp[w] = max(skip, loot + dp[w - weight])
+
+Answer = dp[capacity]
+
+Agar 0/1 Knapsack ho → loop backwards aur dp[i-1][...]
+-------------------------------------------
+#include <bits/stdc++.h>
+using namespace std;
+
+int unboundedKnapsack(vector<int>& weights, vector<int>& values, int capacity) {
+    int n = weights.size();
+    vector<int> dp(capacity + 1, 0);
+    
+    for(int i = 0; i < n; i++) {
+        // Go FORWARDS (not backwards) — can take same item again
+        for(int w = weights[i]; w <= capacity; w++) {
+            dp[w] = max(dp[w], values[i] + dp[w - weights[i]]);
+        }
+    }
+    
+    return dp[capacity];
+}
+
+int main() {
+    vector<int> weights = {10, 20, 30};
+    vector<int> values = {60, 100, 120};
+    int capacity = 50;
+    
+    cout << unboundedKnapsack(weights, values, capacity);  // 300
+    
+    return 0;
+}
+-----------------------------------------------
+LCS / 2D String DP
+--------------------------------------
+dp[i][j] = first i chars of s1 and first j chars of s2 ka LCS
+Agar match → 1 + diagonal (dp[i-1][j-1])
+Agar mismatch → max of left & top (dp[i-1][j], dp[i][j-1])
+Base case → first row & first column = 0
+-----------------------------------------------------
+#include <bits/stdc++.h>
+using namespace std;
+
+int LCS(string s1, string s2) {
+    int n = s1.size();
+    int m = s2.size();    
+    vector<vector<int>> dp(n+1, vector<int>(m+1, 0));
+
+    for(int i = 1; i <= n; i++) {
+        for(int j = 1; j <= m; j++) {
+            if(s1[i-1] == s2[j-1])
+                dp[i][j] = 1 + dp[i-1][j-1];
+            else
+                dp[i][j] = max(dp[i-1][j], dp[i][j-1]);
+        }
+    }   
+    return dp[n][m];
+}
+int main() {
+    string s1 = "abcde";
+    string s2 = "ace";
+    cout << "Length of LCS: " << LCS(s1, s2) << endl; // Output: 3
+    
+    return 0;
+}
+----------------------------------------------
+LIS / Patience Sorting
+-----------------------------------------
+O(n²) → simple DP, har element check previous
+O(n log n) → patience sorting, maintain tails + binary search
+Order matters, consecutive elements nahi zaruri
+Tails array ka size = length of LIS
+--------------------------------------------------------
+#include <bits/stdc++.h>
+using namespace std;
+
+int longestIncreasingSubsequence(vector<int>& arr) {
+    vector<int> temp;
+    temp.push_back(arr[0]);  // start LIS with first element
+
+    for (int i = 1; i < arr.size(); i++) {
+        if (arr[i] > temp.back()) {
+            // Extend the subsequence
+            temp.push_back(arr[i]);
+        } else {
+            // Replace element using lower_bound
+            int ind = lower_bound(temp.begin(), temp.end(), arr[i]) - temp.begin();
+            temp[ind] = arr[i];
+        }
+    }
+
+    return temp.size(); // Length of LIS
+}
+int main() {
+    vector<int> arr = {10, 22, 9, 33, 21, 50, 41, 60};
+    cout << "Length of LIS: " << longestIncreasingSubsequence(arr) << endl;
+
+    return 0;
+}
+----------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
